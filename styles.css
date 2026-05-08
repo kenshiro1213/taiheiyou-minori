@@ -16,6 +16,7 @@
   --color-accent: #c47a2c;
   --color-danger: #b1361e;
   --color-danger-bg: #fbe9e3;
+  --color-feature-bg: #eef4f1;
   --color-par3: #4a7a8a;
   --color-par4: #c47a2c;
   --color-par5: #7a5b1f;
@@ -28,7 +29,7 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 88px;
+  scroll-padding-top: 64px;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
@@ -42,7 +43,6 @@ body {
   color: var(--color-text);
   font-size: 16px;
   line-height: 1.7;
-  /* iOS Safari の bounce で背景色が見えるように */
   background-attachment: fixed;
 }
 
@@ -60,6 +60,7 @@ ul {
 
 a {
   color: var(--color-primary-light);
+  text-decoration: none;
 }
 
 img {
@@ -68,165 +69,290 @@ img {
   display: block;
 }
 
-/* ========== Header ========== */
-.site-header {
-  background: var(--color-primary);
-  color: #fff;
-  padding: 14px 16px;
-  text-align: center;
-  /* iPhone safe-area */
-  padding-top: max(14px, env(safe-area-inset-top));
-}
-
-.site-header__inner {
+/* ========== Page wrapper ========== */
+.page {
   max-width: var(--max-width);
   margin: 0 auto;
-}
-
-.site-title {
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-.site-subtitle {
-  font-size: 0.75rem;
-  opacity: 0.85;
-  margin-top: 2px;
-  letter-spacing: 0.1em;
-}
-
-/* ========== Hole Nav (sticky) ========== */
-.hole-nav {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: rgba(245, 243, 236, 0.95);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--color-border);
-  padding: 8px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.hole-nav__group {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  max-width: var(--max-width);
-  width: 100%;
-  margin: 0 auto;
-}
-
-.hole-nav__label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: var(--color-muted);
-  width: 28px;
-  flex-shrink: 0;
-  letter-spacing: 0.1em;
-}
-
-.hole-nav__buttons {
-  display: grid;
-  grid-template-columns: repeat(9, 1fr);
-  gap: 3px;
-  flex: 1;
-  min-width: 0;
-}
-
-.hole-nav__btn {
-  appearance: none;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: 0;
-  font-size: 0.85rem;
-  font-weight: 700;
-  cursor: pointer;
-  color: var(--color-text);
-  text-decoration: none;
-  text-align: center;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-  /* タップ領域を確保しつつ縦コンパクト */
-  min-height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* iOSのタップハイライトを抑止 */
-  -webkit-tap-highlight-color: transparent;
-}
-
-.hole-nav__btn:active {
-  background: var(--color-primary);
-  color: #fff;
-  border-color: var(--color-primary);
-}
-
-@media (hover: hover) {
-  .hole-nav__btn:hover {
-    background: var(--color-primary);
-    color: #fff;
-    border-color: var(--color-primary);
-  }
-}
-
-/* ========== Course Layout ========== */
-.course {
-  max-width: var(--max-width);
-  margin: 0 auto;
-  padding: 12px 10px 80px;
+  padding: 14px 12px 60px;
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-.section-divider {
-  text-align: center;
-  font-weight: 700;
-  letter-spacing: 0.3em;
-  color: var(--color-muted);
-  padding: 10px 0 2px;
-  font-size: 0.8rem;
+.page--hole {
+  padding-bottom: 80px;
 }
 
+/* ========== Header ========== */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-primary);
+  color: #fff;
+  padding-top: env(safe-area-inset-top);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
+}
+
+.site-header__inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  min-height: 48px;
+  gap: 8px;
+}
+
+.site-header__brand {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+/* Hole header layout: back / title / paginate */
+.site-header--hole .site-header__inner {
+  justify-content: space-between;
+}
+
+.site-header__back,
+.site-header__nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 38px;
+  padding: 0 10px;
+  color: #fff;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.08);
+  -webkit-tap-highlight-color: transparent;
+  gap: 2px;
+}
+
+.site-header__back-icon,
+.site-header__nav {
+  font-size: 1.1rem;
+}
+
+.site-header__back:active,
+.site-header__nav:active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.site-header__title {
+  flex: 1;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.site-header__paginate {
+  display: flex;
+  gap: 4px;
+}
+
+.site-header__nav--disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* ========== Course info ========== */
 .course-info {
   background: var(--color-surface);
   border-radius: var(--radius);
   box-shadow: var(--shadow-card);
-  padding: 10px 14px;
+  padding: 14px 16px;
   text-align: center;
+}
+
+.course-info__title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--color-primary);
+}
+
+.course-info__subtitle {
+  font-size: 0.7rem;
+  color: var(--color-muted);
+  letter-spacing: 0.15em;
+  margin-top: 2px;
 }
 
 .course-info__location {
   font-size: 0.8rem;
   color: var(--color-muted);
-  margin-bottom: 2px;
+  margin-top: 8px;
 }
 
 .course-info__meta {
   font-size: 0.75rem;
   color: var(--color-text);
   font-weight: 500;
-  line-height: 1.5;
+  margin-top: 4px;
+  line-height: 1.6;
 }
 
-/* ========== Hole Card ========== */
+/* ========== Scorecard ========== */
+.scorecard {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.scorecard__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.scorecard__label {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+
+.scorecard__total {
+  font-size: 0.8rem;
+  font-weight: 500;
+  opacity: 0.9;
+  font-variant-numeric: tabular-nums;
+}
+
+.scorecard__columns,
+.scorecard__row {
+  display: grid;
+  grid-template-columns: 44px 56px 56px 1fr 24px;
+  align-items: center;
+}
+
+.scorecard__columns {
+  padding: 8px 12px;
+  background: #f0ede2;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.scorecard__col-label {
+  font-size: 0.65rem;
+  color: var(--color-muted);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.scorecard__col-label--num,
+.scorecard__col-label--par,
+.scorecard__col-label--hdcp {
+  text-align: center;
+}
+
+.scorecard__col-label--yard {
+  text-align: right;
+  padding-right: 4px;
+}
+
+.scorecard__rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.scorecard__row {
+  padding: 12px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  -webkit-tap-highlight-color: transparent;
+  min-height: var(--tap-target);
+  transition: background 0.12s;
+}
+
+.scorecard__row:last-child {
+  border-bottom: none;
+}
+
+.scorecard__row:active {
+  background: #f0ede2;
+}
+
+@media (hover: hover) {
+  .scorecard__row:hover {
+    background: #f0ede2;
+  }
+}
+
+.scorecard__cell {
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.scorecard__cell--num {
+  font-weight: 700;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.scorecard__cell--par {
+  text-align: center;
+}
+
+.scorecard__cell--hdcp {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--color-muted);
+}
+
+.scorecard__cell--yard {
+  text-align: right;
+  padding-right: 4px;
+  font-weight: 600;
+}
+
+.scorecard__cell--chevron {
+  text-align: right;
+  color: var(--color-border);
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+/* ========== Par badge (shared) ========== */
+.par-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 12px;
+  background: var(--color-par4);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.par-badge--3 { background: var(--color-par3); }
+.par-badge--4 { background: var(--color-par4); }
+.par-badge--5 { background: var(--color-par5); }
+
+/* ========== Hole detail ========== */
 .hole {
   background: var(--color-surface);
   border-radius: var(--radius);
   box-shadow: var(--shadow-card);
   overflow: hidden;
-  scroll-margin-top: 92px;
 }
 
-.hole__header {
+.hole__title-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px;
+  padding: 14px 16px;
   background: var(--color-primary);
   color: #fff;
 }
@@ -244,7 +370,7 @@ img {
 }
 
 .hole__number-value {
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   font-weight: 700;
   line-height: 1;
 }
@@ -253,8 +379,14 @@ img {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.hole__meta .par-badge {
+  min-width: 38px;
+  height: 30px;
+  padding: 0 12px;
   font-size: 0.9rem;
-  font-weight: 600;
+  border-radius: 15px;
 }
 
 .hole__hdcp {
@@ -270,79 +402,64 @@ img {
   margin-left: 2px;
 }
 
-.hole__par-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 30px;
-  height: 28px;
-  padding: 0 9px;
-  border-radius: 14px;
-  background: var(--color-accent);
-  color: #fff;
-  font-size: 0.85rem;
-  font-weight: 700;
-}
-
-.hole__par-badge--3 { background: var(--color-par3); }
-.hole__par-badge--4 { background: var(--color-par4); }
-.hole__par-badge--5 { background: var(--color-par5); }
-
 .hole__body {
-  padding: 12px 14px 14px;
+  padding: 14px 14px 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
-/* ===== Layout image ===== */
-.hole__layout-img {
+/* Image (layout / green) */
+.hole-img {
   margin: 0;
   display: flex;
-  flex-direction: column;
   align-items: center;
+  justify-content: center;
   background: #eef3ec;
   border-radius: var(--radius-sm);
-  padding: 8px 6px;
-  gap: 6px;
+  padding: 8px;
 }
 
-.hole__layout-img img {
-  /* スマホ縦持ちで画像を見やすく — 画面高の半分くらい */
-  max-height: 60vh;
+.hole-img img {
+  max-height: 70vh;
   width: auto;
   max-width: 100%;
   border-radius: 4px;
 }
 
-.hole__layout-link {
-  font-size: 0.75rem;
+.hole-img--green img {
+  max-height: 50vh;
+}
+
+.hole__detail-link {
+  align-self: flex-start;
+  font-size: 0.8rem;
   color: var(--color-primary-light);
-  text-decoration: none;
-  padding: 6px 10px;
+  padding: 8px 12px;
   border: 1px solid var(--color-border);
   border-radius: 999px;
   background: var(--color-surface);
   -webkit-tap-highlight-color: transparent;
-  min-height: 32px;
+  min-height: 36px;
   display: inline-flex;
   align-items: center;
+  margin-top: -4px;
 }
 
-.hole__layout-link:active {
+.hole__detail-link:active {
   background: var(--color-primary);
   color: #fff;
   border-color: var(--color-primary);
 }
 
-/* ===== Yardage ===== */
+/* Yardage */
 .yardage {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 4px;
   background: #f0ede2;
   border-radius: var(--radius-sm);
-  padding: 6px 4px;
+  padding: 8px 4px;
 }
 
 .yardage__cell {
@@ -360,7 +477,7 @@ img {
 
 .yardage__value {
   display: block;
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--color-text);
   font-variant-numeric: tabular-nums;
@@ -380,7 +497,7 @@ img {
   font-size: 0.85rem;
 }
 
-/* ===== Field common ===== */
+/* Field */
 .field {
   display: flex;
   flex-direction: column;
@@ -410,7 +527,7 @@ img {
   font-size: 0.95rem;
   white-space: pre-wrap;
   word-break: break-word;
-  line-height: 1.65;
+  line-height: 1.7;
 }
 
 .field__value--empty {
@@ -419,12 +536,27 @@ img {
   font-size: 0.85rem;
 }
 
-/* ===== Dangers ===== */
+/* Features */
+.field--features {
+  background: var(--color-feature-bg);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+
+.field--features .field__label {
+  color: var(--color-primary);
+}
+
+.field--features .field__label::before {
+  background: var(--color-primary);
+}
+
+/* Dangers */
 .dangers {
   background: var(--color-danger-bg);
   border-left: 4px solid var(--color-danger);
   border-radius: var(--radius-sm);
-  padding: 8px 12px 8px 12px;
+  padding: 10px 12px;
 }
 
 .dangers .field__label {
@@ -441,12 +573,12 @@ img {
 }
 
 .dangers li {
-  font-size: 0.92rem;
+  font-size: 0.93rem;
   margin-bottom: 2px;
   line-height: 1.55;
 }
 
-/* ===== Clubs ===== */
+/* Clubs */
 .club-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -488,14 +620,307 @@ img {
   font-size: 0.8rem;
 }
 
-/* ========== Footer ========== */
+/* Green section */
+.green-section {
+  background: #f7faf6;
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.green-section__title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--color-primary);
+  border-bottom: 2px solid var(--color-primary);
+  padding-bottom: 4px;
+  margin-bottom: 2px;
+}
+
+/* Green close-up image (cropped to top portion of layout) */
+.hole-img--green {
+  background: #eef3ec;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+}
+
+.hole-img--green__crop {
+  width: 100%;
+  max-width: 220px;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.hole-img--green__crop img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.hole-img--green__expand {
+  font-size: 0.72rem;
+  color: var(--color-primary-light);
+  padding: 4px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: var(--color-surface);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.hole-img--green__expand:active {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* Hole pagination */
+.hole-pagination {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.hole-pagination__btn {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: var(--color-text);
+  -webkit-tap-highlight-color: transparent;
+  min-height: 64px;
+  position: relative;
+  transition: background 0.12s;
+}
+
+.hole-pagination__btn--prev {
+  text-align: left;
+  padding-left: 36px;
+}
+
+.hole-pagination__btn--next {
+  text-align: right;
+  padding-right: 36px;
+  align-items: flex-end;
+}
+
+.hole-pagination__btn--disabled {
+  visibility: hidden;
+}
+
+.hole-pagination__btn:active {
+  background: #f0ede2;
+}
+
+.hole-pagination__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.6rem;
+  color: var(--color-primary-light);
+  line-height: 1;
+}
+
+.hole-pagination__btn--prev .hole-pagination__arrow {
+  left: 12px;
+}
+
+.hole-pagination__btn--next .hole-pagination__arrow {
+  right: 12px;
+}
+
+.hole-pagination__label {
+  font-size: 0.7rem;
+  color: var(--color-muted);
+  letter-spacing: 0.05em;
+}
+
+.hole-pagination__num {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* Print link on index */
+.print-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 14px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  -webkit-tap-highlight-color: transparent;
+  min-height: var(--tap-target);
+}
+
+.print-link:active {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
+/* ========== Print sheet view (screen preview + print) ========== */
+.site-header__print {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: none;
+  padding: 0 12px;
+  height: 38px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.site-header__print:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.page--print {
+  background: #e8e7e0;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.print-page {
+  background: #fff;
+  width: 100%;
+  max-width: 794px; /* A4 portrait width @ 96dpi ≒ 210mm */
+  aspect-ratio: 210 / 297;
+  padding: 8mm;
+  display: flex;
+  flex-direction: column;
+  gap: 4mm;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  color: #000;
+}
+
+.print-page__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 9pt;
+  border-bottom: 1px solid #999;
+  padding-bottom: 1mm;
+}
+
+.print-page__course {
+  font-weight: 600;
+}
+
+.print-page__label {
+  font-size: 14pt;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+}
+
+.print-page__date {
+  color: #555;
+}
+
+.print-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 2mm;
+  flex: 1;
+  min-height: 0;
+}
+
+.print-cell {
+  border: 1px solid #999;
+  border-radius: 1mm;
+  padding: 1.5mm 2mm;
+  display: flex;
+  flex-direction: column;
+  gap: 1mm;
+  break-inside: avoid;
+  min-height: 0;
+}
+
+.print-cell__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 8pt;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0.5mm;
+}
+
+.print-cell__num {
+  font-size: 12pt;
+  font-weight: 700;
+}
+
+.print-cell__par {
+  font-weight: 600;
+}
+
+.print-cell__yard {
+  font-variant-numeric: tabular-nums;
+  color: #444;
+}
+
+.print-cell__img-wrap {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 35mm;
+  overflow: hidden;
+}
+
+.print-cell__img {
+  max-height: 100%;
+  width: auto;
+  display: block;
+}
+
+.print-cell__notes {
+  flex: 1;
+  min-height: 12mm;
+  border-top: 1px dotted #bbb;
+  /* 罫線で書き込みやすく */
+  background-image: repeating-linear-gradient(
+    transparent,
+    transparent 5mm,
+    #ddd 5mm,
+    #ddd calc(5mm + 1px)
+  );
+}
+
+/* Footer */
 .site-footer {
   text-align: center;
   padding: 20px 16px 32px;
   font-size: 0.75rem;
   color: var(--color-muted);
-  /* iPhone safe-area */
   padding-bottom: max(32px, env(safe-area-inset-bottom));
+}
+
+.site-footer--hole {
+  padding-top: 12px;
+  padding-bottom: max(60px, env(safe-area-inset-bottom));
 }
 
 .site-footer__credit {
@@ -508,7 +933,25 @@ img {
   color: var(--color-primary-light);
 }
 
-/* ========== Back to top ========== */
+.site-footer__home {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  font-size: 0.8rem;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 36px;
+  line-height: 1.5;
+}
+
+.site-footer__home:active {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
+/* Back to top */
 .back-to-top {
   position: fixed;
   right: 12px;
@@ -523,7 +966,6 @@ img {
   cursor: pointer;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   opacity: 0;
-  pointer-events: none;
   transition: opacity 0.2s;
   z-index: 20;
   -webkit-tap-highlight-color: transparent;
@@ -531,59 +973,54 @@ img {
 
 .back-to-top.is-visible {
   opacity: 0.92;
-  pointer-events: auto;
 }
 
 /* ========== Tablet (≥600px) ========== */
 @media (min-width: 600px) {
-  body {
-    font-size: 16px;
+  .site-header__inner {
+    padding: 12px 16px;
   }
 
-  .site-title {
+  .site-header__title {
+    font-size: 1.1rem;
+  }
+
+  .course-info__title {
     font-size: 1.4rem;
   }
 
-  .site-subtitle {
-    font-size: 0.8rem;
+  .scorecard__columns,
+  .scorecard__row {
+    grid-template-columns: 60px 80px 80px 1fr 28px;
+    padding-left: 18px;
+    padding-right: 18px;
   }
 
-  .course {
-    padding: 18px 14px 80px;
-    gap: 18px;
+  .scorecard__cell--num {
+    font-size: 1.25rem;
   }
 
-  .hole-nav {
-    padding: 10px 14px;
-  }
-
-  .hole-nav__btn {
-    font-size: 0.95rem;
-    min-height: 38px;
-  }
-
-  .hole__header {
-    padding: 14px 18px;
+  .hole__title-bar {
+    padding: 16px 18px;
   }
 
   .hole__number-value {
-    font-size: 1.9rem;
+    font-size: 2rem;
   }
 
-  .hole__par-badge {
-    min-width: 38px;
+  .hole__meta .par-badge {
+    min-width: 44px;
     height: 32px;
-    font-size: 0.95rem;
-    padding: 0 12px;
+    font-size: 1rem;
   }
 
   .hole__body {
     padding: 16px 18px 18px;
-    gap: 14px;
+    gap: 16px;
   }
 
   .yardage__value {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
   }
 
   .yardage__label {
@@ -601,42 +1038,93 @@ img {
   .club-grid__value {
     font-size: 0.95rem;
   }
+
+  .hole-pagination__num {
+    font-size: 1.1rem;
+  }
 }
 
 /* ========== Desktop (≥760px) ========== */
 @media (min-width: 760px) {
-  .course {
-    padding: 24px 16px 80px;
-    gap: 20px;
+  .page {
+    padding: 20px 16px 60px;
+    gap: 18px;
   }
 
-  .hole__layout-img img {
-    max-height: 70vh;
+  .page--hole {
+    padding-bottom: 80px;
+  }
+
+  .hole-img img {
+    max-height: 75vh;
   }
 }
 
 /* ========== Landscape phone ========== */
 @media (max-width: 599px) and (orientation: landscape) {
-  /* 横画面では画像を低く保ち、横スクロール不要に */
-  .hole__layout-img img {
+  .hole-img img {
     max-height: 80vh;
   }
 }
 
 /* ========== Print ========== */
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+
 @media print {
-  .hole-nav,
+  /* 共通: ナビ・ボタン・フッター類は隠す */
+  .site-header,
   .back-to-top,
   .site-footer,
-  .hole__layout-link {
+  .hole__detail-link,
+  .hole-pagination,
+  .no-print {
     display: none !important;
   }
 
+  html,
   body {
-    background: #fff;
-    font-size: 11pt;
+    background: #fff !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
+  body {
+    font-size: 11pt;
+    color: #000;
+  }
+
+  /* 印刷ページ専用 */
+  .page--print {
+    background: #fff !important;
+    padding: 0 !important;
+    gap: 0 !important;
+    align-items: stretch !important;
+  }
+
+  .print-page {
+    box-shadow: none !important;
+    max-width: none !important;
+    width: 100% !important;
+    aspect-ratio: auto !important;
+    height: 100vh !important;
+    page-break-after: always !important;
+    break-after: page !important;
+    margin: 0 !important;
+  }
+
+  .print-page:last-child {
+    page-break-after: auto !important;
+    break-after: auto !important;
+  }
+
+  .print-cell {
+    break-inside: avoid !important;
+  }
+
+  /* 通常ページ印刷時のフォールバック (ホール詳細など) */
   .hole {
     box-shadow: none;
     border: 1px solid #ccc;
@@ -644,19 +1132,13 @@ img {
     margin-bottom: 12px;
   }
 
-  .site-header {
-    background: #fff;
-    color: #000;
-    border-bottom: 2px solid #000;
-  }
-
-  .hole__header {
+  .hole__title-bar {
     background: #fff;
     color: #000;
     border-bottom: 1px solid #000;
   }
 
-  .hole__layout-img img {
+  .hole-img img {
     max-height: none;
     max-width: 60mm;
   }

@@ -1,11 +1,7 @@
-import { holes, COURSE_NAME, COURSE_INFO } from "./data/holes.js";
+import { holes, COURSE_NAME, COURSE_INFO, rakutenLayoutImg } from "./data/holes.js";
 
-const courseEl = document.getElementById("course");
-const navOut = document.querySelector('[data-nav-group="out"]');
-const navIn = document.querySelector('[data-nav-group="in"]');
+const app = document.getElementById("app");
 const backToTop = document.getElementById("backToTop");
-
-document.title = `${COURSE_NAME} 攻略メモ`;
 
 const escapeHtml = (str) =>
   String(str ?? "")
@@ -15,19 +11,133 @@ const escapeHtml = (str) =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
 
-const renderImage = (hole) => {
-  if (!hole.imageUrl) return "";
-  const detail = hole.detailUrl
-    ? `<a class="hole__layout-link" href="${escapeHtml(hole.detailUrl)}" target="_blank" rel="noopener" aria-label="ShotNaviで詳細を開く">ShotNaviで距離計測 ↗</a>`
-    : "";
+document.title = `${COURSE_NAME} 攻略メモ`;
+
+// =========================================================
+// Router
+// =========================================================
+const parseRoute = () => {
+  const hash = window.location.hash.replace(/^#/, "");
+  if (hash === "/print") return { name: "print" };
+  const m = hash.match(/^\/hole\/(\d+)$/);
+  if (m) {
+    const n = parseInt(m[1], 10);
+    if (n >= 1 && n <= 18) return { name: "hole", number: n };
+  }
+  return { name: "index" };
+};
+
+const navigate = (path) => {
+  window.location.hash = path;
+};
+
+// =========================================================
+// Helpers
+// =========================================================
+const sumBack = (range) =>
+  holes
+    .filter((h) => range.includes(h.number))
+    .reduce((s, h) => s + (Number(h.yardage?.back) || 0), 0);
+
+const sumPar = (range) =>
+  holes
+    .filter((h) => range.includes(h.number))
+    .reduce((s, h) => s + (Number(h.par) || 0), 0);
+
+const yardCell = (v) => {
+  const empty = v === undefined || v === null || v === "";
+  if (empty) return `<span class="yardage__value yardage__value--empty">—</span>`;
+  return `<span class="yardage__value">${escapeHtml(v)}<small>y</small></span>`;
+};
+
+// =========================================================
+// Index view (overview / scorecard)
+// =========================================================
+const renderCourseInfo = () => {
+  const info = COURSE_INFO || {};
+  const items = [
+    info.par ? `Par ${info.par}` : null,
+    info.totalYardage ? `${info.totalYardage.toLocaleString()}Y` : null,
+    info.terrain || null,
+    info.greenType || null,
+    info.designer ? `設計: ${info.designer}` : null,
+  ].filter(Boolean);
   return `
-    <figure class="hole__layout-img">
-      <img src="${escapeHtml(hole.imageUrl)}" alt="HOLE ${hole.number} レイアウト図" loading="lazy" />
-      ${detail}
-    </figure>
+    <section class="course-info">
+      <h1 class="course-info__title">${escapeHtml(COURSE_NAME)}</h1>
+      <p class="course-info__subtitle">攻略メモ / Hole Strategy</p>
+      ${info.location ? `<p class="course-info__location">${escapeHtml(info.location)}</p>` : ""}
+      ${items.length ? `<p class="course-info__meta">${items.map(escapeHtml).join(" / ")}</p>` : ""}
+    </section>
   `;
 };
 
+const renderScorecardRow = (hole) => `
+  <a class="scorecard__row" href="#/hole/${hole.number}">
+    <span class="scorecard__cell scorecard__cell--num">${hole.number}</span>
+    <span class="scorecard__cell scorecard__cell--par">
+      <span class="par-badge par-badge--${hole.par}">P${hole.par}</span>
+    </span>
+    <span class="scorecard__cell scorecard__cell--hdcp">${hole.hdcp ?? "—"}</span>
+    <span class="scorecard__cell scorecard__cell--yard">${
+      hole.yardage?.back ? hole.yardage.back + "Y" : "—"
+    }</span>
+    <span class="scorecard__cell scorecard__cell--chevron" aria-hidden="true">›</span>
+  </a>
+`;
+
+const renderScorecardSection = (label, range) => {
+  const inRange = holes.filter((h) => range.includes(h.number));
+  return `
+    <section class="scorecard">
+      <header class="scorecard__head">
+        <h2 class="scorecard__label">${label}</h2>
+        <span class="scorecard__total">
+          Par ${sumPar(range)} / ${sumBack(range).toLocaleString()}Y
+        </span>
+      </header>
+      <div class="scorecard__columns">
+        <span class="scorecard__col-label scorecard__col-label--num">No.</span>
+        <span class="scorecard__col-label scorecard__col-label--par">Par</span>
+        <span class="scorecard__col-label scorecard__col-label--hdcp">HDCP</span>
+        <span class="scorecard__col-label scorecard__col-label--yard">BACK</span>
+        <span class="scorecard__col-label scorecard__col-label--chevron"></span>
+      </div>
+      <div class="scorecard__rows">
+        ${inRange.map(renderScorecardRow).join("")}
+      </div>
+    </section>
+  `;
+};
+
+const renderIndex = () => {
+  const out = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const inn = [10, 11, 12, 13, 14, 15, 16, 17, 18];
+  app.innerHTML = `
+    <header class="site-header">
+      <div class="site-header__inner">
+        <span class="site-header__brand">攻略メモ</span>
+      </div>
+    </header>
+    <main class="page">
+      ${renderCourseInfo()}
+      ${renderScorecardSection("OUT", out)}
+      ${renderScorecardSection("IN", inn)}
+      <a class="print-link" href="#/print">🖨 印刷用シート (A4・9ホール×2枚)</a>
+      <footer class="site-footer">
+        <p>個人的な攻略メモ。</p>
+        <p class="site-footer__credit">
+          ホール俯瞰図: <a href="https://shotnavi.jp/gcguide/cdata/cdata_182_0.htm" target="_blank" rel="noopener">ShotNavi</a> /
+          ヤード・パー: <a href="https://booking.gora.golf.rakuten.co.jp/guide/course_info/layout/disp/c_id/80113" target="_blank" rel="noopener">楽天GORA</a>
+        </p>
+      </footer>
+    </main>
+  `;
+};
+
+// =========================================================
+// Hole detail view
+// =========================================================
 const renderYardage = (yardage = {}) => {
   const cells = [
     { label: "BACK", key: "back" },
@@ -38,18 +148,56 @@ const renderYardage = (yardage = {}) => {
   return `
     <div class="yardage" aria-label="ティーごとの距離">
       ${cells
-        .map((c) => {
-          const v = yardage[c.key];
-          const isEmpty = v === undefined || v === null || v === "";
-          return `
+        .map(
+          (c) => `
         <div class="yardage__cell">
           <span class="yardage__label">${c.label}</span>
-          <span class="yardage__value ${
-            isEmpty ? "yardage__value--empty" : ""
-          }">${isEmpty ? "—" : escapeHtml(v) + "<small>y</small>"}</span>
-        </div>`;
-        })
+          ${yardCell(yardage[c.key])}
+        </div>`,
+        )
         .join("")}
+    </div>
+  `;
+};
+
+const renderImage = (url, alt, extraClass = "") => {
+  if (!url) return "";
+  return `
+    <figure class="hole-img ${extraClass}">
+      <img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}" loading="lazy" />
+    </figure>
+  `;
+};
+
+const renderTextField = (label, value, opts = {}) => {
+  const empty = value === null || value === undefined || value === "";
+  if (empty && opts.hideIfEmpty) return "";
+  const cls = opts.className ? ` ${opts.className}` : "";
+  return `
+    <div class="field${cls}">
+      <span class="field__label">${escapeHtml(label)}</span>
+      <p class="field__value ${empty ? "field__value--empty" : ""}">${
+        empty ? "未入力" : escapeHtml(value)
+      }</p>
+    </div>
+  `;
+};
+
+const renderDangers = (dangers = []) => {
+  if (!Array.isArray(dangers) || dangers.length === 0) {
+    return `
+      <div class="field dangers">
+        <span class="field__label">危険ポイント</span>
+        <p class="field__value field__value--empty">未入力</p>
+      </div>
+    `;
+  }
+  return `
+    <div class="field dangers">
+      <span class="field__label">危険ポイント</span>
+      <ul>
+        ${dangers.map((d) => `<li>${escapeHtml(d)}</li>`).join("")}
+      </ul>
     </div>
   `;
 };
@@ -84,115 +232,207 @@ const renderClubs = (clubs = {}) => {
   `;
 };
 
-const renderTextField = (label, value, opts = {}) => {
-  const empty = value === null || value === undefined || value === "";
-  if (empty && opts.hideIfEmpty) return "";
+const renderGreenSection = (hole) => {
+  // グリーン画像は明示指定が空なら楽天画像にフォールバック
+  const greenImg = hole.imageGreenUrl || rakutenLayoutImg(hole.number);
+  const hasGreen = !!hole.green;
+  const hasAround = !!hole.greenAround;
+  if (!greenImg && !hasGreen && !hasAround) return "";
   return `
-    <div class="field">
-      <span class="field__label">${escapeHtml(label)}</span>
-      <p class="field__value ${
-        empty ? "field__value--empty" : ""
-      }">${empty ? "未入力" : escapeHtml(value)}</p>
-    </div>
+    <section class="green-section">
+      <h3 class="green-section__title">グリーン</h3>
+      ${
+        greenImg
+          ? `
+        <figure class="hole-img hole-img--green">
+          <div class="hole-img--green__crop">
+            <img src="${escapeHtml(greenImg)}" alt="HOLE ${hole.number} グリーン周り" loading="lazy" />
+          </div>
+          <a class="hole-img--green__expand" href="${escapeHtml(greenImg)}" target="_blank" rel="noopener">全体を見る ↗</a>
+        </figure>
+      `
+          : ""
+      }
+      ${renderTextField("グリーン", hole.green, { hideIfEmpty: true })}
+      ${renderTextField("グリーン周り", hole.greenAround, { hideIfEmpty: true })}
+    </section>
   `;
 };
 
-const renderDangers = (dangers = []) => {
-  if (!Array.isArray(dangers) || dangers.length === 0) {
-    return `
-      <div class="field dangers">
-        <span class="field__label">危険ポイント</span>
-        <p class="field__value field__value--empty">未入力</p>
-      </div>
-    `;
+const renderHole = (number) => {
+  const hole = holes.find((h) => h.number === number);
+  if (!hole) {
+    renderIndex();
+    return;
   }
-  return `
-    <div class="field dangers">
-      <span class="field__label">危険ポイント</span>
-      <ul>
-        ${dangers.map((d) => `<li>${escapeHtml(d)}</li>`).join("")}
-      </ul>
-    </div>
-  `;
-};
+  const prev = number > 1 ? number - 1 : null;
+  const next = number < 18 ? number + 1 : null;
 
-const renderHole = (hole) => {
-  const parClass = `hole__par-badge--${hole.par}`;
-  return `
-    <article class="hole" id="hole-${hole.number}">
-      <header class="hole__header">
-        <div class="hole__number">
-          <span class="hole__number-label">HOLE</span>
-          <span class="hole__number-value">${hole.number}</span>
+  app.innerHTML = `
+    <header class="site-header site-header--hole">
+      <div class="site-header__inner">
+        <a class="site-header__back" href="#/" aria-label="一覧へ戻る">
+          <span class="site-header__back-icon">‹</span>
+          <span>一覧</span>
+        </a>
+        <span class="site-header__title">HOLE ${hole.number}</span>
+        <div class="site-header__paginate">
+          ${prev ? `<a class="site-header__nav" href="#/hole/${prev}" aria-label="前のホール">‹</a>` : `<span class="site-header__nav site-header__nav--disabled" aria-hidden="true">‹</span>`}
+          ${next ? `<a class="site-header__nav" href="#/hole/${next}" aria-label="次のホール">›</a>` : `<span class="site-header__nav site-header__nav--disabled" aria-hidden="true">›</span>`}
         </div>
-        <div class="hole__meta">
-          <span class="hole__par-badge ${parClass}">PAR ${hole.par}</span>
-          ${hole.hdcp ? `<span class="hole__hdcp">HDCP <strong>${hole.hdcp}</strong></span>` : ""}
-        </div>
-      </header>
-      <div class="hole__body">
-        ${renderImage(hole)}
-        ${renderYardage(hole.yardage)}
-        ${renderTextField("レイアウト", hole.layout)}
-        ${renderTextField("攻め方", hole.strategy)}
-        ${renderDangers(hole.dangers)}
-        ${renderClubs(hole.clubs)}
-        ${renderTextField("グリーン", hole.green, { hideIfEmpty: true })}
-        ${renderTextField("メモ", hole.notes, { hideIfEmpty: true })}
       </div>
-    </article>
+    </header>
+
+    <main class="page page--hole">
+      <article class="hole">
+        <header class="hole__title-bar">
+          <div class="hole__number">
+            <span class="hole__number-label">HOLE</span>
+            <span class="hole__number-value">${hole.number}</span>
+          </div>
+          <div class="hole__meta">
+            <span class="par-badge par-badge--${hole.par}">PAR ${hole.par}</span>
+            ${hole.hdcp ? `<span class="hole__hdcp">HDCP <strong>${hole.hdcp}</strong></span>` : ""}
+          </div>
+        </header>
+
+        <div class="hole__body">
+          ${renderYardage(hole.yardage)}
+          ${renderImage(hole.imageUrl, `HOLE ${hole.number} レイアウト図`, "hole-img--layout")}
+          ${
+            hole.detailUrl
+              ? `<a class="hole__detail-link" href="${escapeHtml(hole.detailUrl)}" target="_blank" rel="noopener">ShotNaviで距離計測 ↗</a>`
+              : ""
+          }
+          ${renderTextField("レイアウト", hole.layout)}
+          ${renderTextField("特徴", hole.features, { hideIfEmpty: true, className: "field--features" })}
+          ${renderTextField("攻め方", hole.strategy)}
+          ${renderDangers(hole.dangers)}
+          ${renderClubs(hole.clubs)}
+          ${renderGreenSection(hole)}
+          ${renderTextField("メモ", hole.notes, { hideIfEmpty: true })}
+        </div>
+      </article>
+
+      <nav class="hole-pagination" aria-label="ホール間ナビゲーション">
+        ${
+          prev
+            ? `<a class="hole-pagination__btn hole-pagination__btn--prev" href="#/hole/${prev}">
+                 <span class="hole-pagination__arrow">‹</span>
+                 <span class="hole-pagination__label">前のホール</span>
+                 <span class="hole-pagination__num">HOLE ${prev}</span>
+               </a>`
+            : `<span class="hole-pagination__btn hole-pagination__btn--prev hole-pagination__btn--disabled"></span>`
+        }
+        ${
+          next
+            ? `<a class="hole-pagination__btn hole-pagination__btn--next" href="#/hole/${next}">
+                 <span class="hole-pagination__num">HOLE ${next}</span>
+                 <span class="hole-pagination__label">次のホール</span>
+                 <span class="hole-pagination__arrow">›</span>
+               </a>`
+            : `<span class="hole-pagination__btn hole-pagination__btn--next hole-pagination__btn--disabled"></span>`
+        }
+      </nav>
+
+      <footer class="site-footer site-footer--hole">
+        <a class="site-footer__home" href="#/">▲ コース一覧へ戻る</a>
+      </footer>
+    </main>
   `;
 };
 
-const renderCourseInfo = () => {
-  const info = COURSE_INFO || {};
-  const items = [
-    info.par ? `Par ${info.par}` : null,
-    info.totalYardage ? `${info.totalYardage.toLocaleString()}Y` : null,
-    info.terrain || null,
-    info.greenType || null,
-    info.designer ? `設計: ${info.designer}` : null,
-  ].filter(Boolean);
-  if (items.length === 0 && !info.location) return "";
+// =========================================================
+// Print view (A4 / 9 holes per page × 2 pages)
+// =========================================================
+const renderPrintCell = (hole) => {
+  const img = rakutenLayoutImg(hole.number);
   return `
-    <div class="course-info">
-      ${info.location ? `<p class="course-info__location">${escapeHtml(info.location)}</p>` : ""}
-      ${items.length ? `<p class="course-info__meta">${items.map(escapeHtml).join(" / ")}</p>` : ""}
+    <div class="print-cell">
+      <header class="print-cell__head">
+        <span class="print-cell__num">${hole.number}</span>
+        <span class="print-cell__par">PAR ${hole.par}</span>
+        <span class="print-cell__yard">${
+          hole.yardage?.back ? hole.yardage.back + "Y" : "—"
+        }</span>
+      </header>
+      <div class="print-cell__img-wrap">
+        <img class="print-cell__img" src="${escapeHtml(img)}" alt="HOLE ${hole.number}" />
+      </div>
+      <div class="print-cell__notes" aria-label="メモ欄"></div>
     </div>
   `;
 };
 
-const renderCourse = () => {
-  const out = holes.filter((h) => h.number <= 9);
-  const inn = holes.filter((h) => h.number >= 10);
-  courseEl.innerHTML = `
-    ${renderCourseInfo()}
-    <div class="section-divider">— OUT —</div>
-    ${out.map(renderHole).join("")}
-    <div class="section-divider">— IN —</div>
-    ${inn.map(renderHole).join("")}
+const renderPrintPage = (label, range) => {
+  const cells = holes.filter((h) => range.includes(h.number));
+  return `
+    <section class="print-page">
+      <header class="print-page__head">
+        <span class="print-page__course">${escapeHtml(COURSE_NAME)}</span>
+        <span class="print-page__label">${label}</span>
+        <span class="print-page__date">日付: ____________</span>
+      </header>
+      <div class="print-grid">
+        ${cells.map(renderPrintCell).join("")}
+      </div>
+    </section>
   `;
 };
 
-const renderNav = () => {
-  const buildBtn = (n) =>
-    `<a class="hole-nav__btn" href="#hole-${n}">${n}</a>`;
-  navOut.innerHTML = holes
-    .filter((h) => h.number <= 9)
-    .map((h) => buildBtn(h.number))
-    .join("");
-  navIn.innerHTML = holes
-    .filter((h) => h.number >= 10)
-    .map((h) => buildBtn(h.number))
-    .join("");
+const renderPrint = () => {
+  const out = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const inn = [10, 11, 12, 13, 14, 15, 16, 17, 18];
+  app.innerHTML = `
+    <header class="site-header site-header--hole no-print">
+      <div class="site-header__inner">
+        <a class="site-header__back" href="#/" aria-label="一覧へ戻る">
+          <span class="site-header__back-icon">‹</span>
+          <span>一覧</span>
+        </a>
+        <span class="site-header__title">印刷用シート</span>
+        <button class="site-header__print" id="printBtn" type="button">🖨 印刷</button>
+      </div>
+    </header>
+    <main class="page page--print">
+      ${renderPrintPage("OUT", out)}
+      ${renderPrintPage("IN", inn)}
+    </main>
+  `;
+  const btn = document.getElementById("printBtn");
+  if (btn) btn.addEventListener("click", () => window.print());
 };
 
+// =========================================================
+// Render dispatcher
+// =========================================================
+const render = () => {
+  const route = parseRoute();
+  if (route.name === "hole") {
+    renderHole(route.number);
+  } else if (route.name === "print") {
+    renderPrint();
+  } else {
+    renderIndex();
+  }
+  // ハッシュ変更のたびにスクロール位置をリセット
+  window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
+};
+
+// =========================================================
+// Back to top
+// =========================================================
 const setupBackToTop = () => {
   const onScroll = () => {
     if (window.scrollY > 400) {
+      backToTop.removeAttribute("hidden");
       backToTop.classList.add("is-visible");
     } else {
       backToTop.classList.remove("is-visible");
+      // 完全フェード後に非表示
+      setTimeout(() => {
+        if (window.scrollY <= 400) backToTop.setAttribute("hidden", "");
+      }, 200);
     }
   };
   window.addEventListener("scroll", onScroll, { passive: true });
@@ -201,6 +441,9 @@ const setupBackToTop = () => {
   });
 };
 
-renderNav();
-renderCourse();
+// =========================================================
+// Boot
+// =========================================================
+window.addEventListener("hashchange", render);
 setupBackToTop();
+render();
