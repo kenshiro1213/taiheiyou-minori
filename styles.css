@@ -840,20 +840,23 @@ img {
 
 .print-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  gap: 2mm;
+  gap: 4mm;
   flex: 1;
   min-height: 0;
 }
 
+.print-grid--4 {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
 .print-cell {
   border: 1px solid #999;
-  border-radius: 1mm;
-  padding: 1.5mm 2mm;
-  display: flex;
-  flex-direction: column;
-  gap: 1mm;
+  border-radius: 1.5mm;
+  padding: 2.5mm 3mm;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 2mm;
   break-inside: avoid;
   min-height: 0;
 }
@@ -862,51 +865,64 @@ img {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  font-size: 8pt;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 0.5mm;
+  font-size: 10pt;
+  border-bottom: 1px solid #aaa;
+  padding-bottom: 1mm;
 }
 
 .print-cell__num {
-  font-size: 12pt;
+  font-size: 18pt;
   font-weight: 700;
+  line-height: 1;
 }
 
 .print-cell__par {
+  font-size: 11pt;
   font-weight: 600;
 }
 
 .print-cell__yard {
+  font-size: 10pt;
   font-variant-numeric: tabular-nums;
   color: #444;
 }
 
-.print-cell__img-wrap {
-  flex: 0 0 auto;
+.print-cell__layout {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 35mm;
   overflow: hidden;
+  min-height: 0;
 }
 
-.print-cell__img {
+.print-cell__layout img {
+  max-width: 100%;
   max-height: 100%;
   width: auto;
+  height: auto;
   display: block;
 }
 
-.print-cell__notes {
-  flex: 1;
-  min-height: 12mm;
-  border-top: 1px dotted #bbb;
-  /* 罫線で書き込みやすく */
-  background-image: repeating-linear-gradient(
-    transparent,
-    transparent 5mm,
-    #ddd 5mm,
-    #ddd calc(5mm + 1px)
-  );
+.print-cell__green {
+  display: flex;
+  justify-content: center;
+  border-top: 1px dashed #bbb;
+  padding-top: 2mm;
+}
+
+.print-cell__green-crop {
+  width: 36mm;
+  height: 36mm;
+  overflow: hidden;
+  border: 1px solid #ccc;
+  border-radius: 1mm;
+  background: #fff;
+}
+
+.print-cell__green-crop img {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 /* Footer */

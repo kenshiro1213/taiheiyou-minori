@@ -123,7 +123,7 @@ const renderIndex = () => {
       ${renderCourseInfo()}
       ${renderScorecardSection("OUT", out)}
       ${renderScorecardSection("IN", inn)}
-      <a class="print-link" href="#/print">🖨 印刷用シート (A4・9ホール×2枚)</a>
+      <a class="print-link" href="#/print">🖨 印刷用シート (A4・4ホール×5枚)</a>
       <footer class="site-footer">
         <p>個人的な攻略メモ。</p>
         <p class="site-footer__credit">
@@ -343,10 +343,11 @@ const renderHole = (number) => {
 };
 
 // =========================================================
-// Print view (A4 / 9 holes per page × 2 pages)
+// Print view (A4 / 4 holes per page)
 // =========================================================
 const renderPrintCell = (hole) => {
-  const img = rakutenLayoutImg(hole.number);
+  const layoutUrl = rakutenLayoutImg(hole.number);
+  const greenUrl = hole.imageGreenUrl || rakutenLayoutImg(hole.number);
   return `
     <div class="print-cell">
       <header class="print-cell__head">
@@ -356,24 +357,40 @@ const renderPrintCell = (hole) => {
           hole.yardage?.back ? hole.yardage.back + "Y" : "—"
         }</span>
       </header>
-      <div class="print-cell__img-wrap">
-        <img class="print-cell__img" src="${escapeHtml(img)}" alt="HOLE ${hole.number}" />
+      <div class="print-cell__layout">
+        <img src="${escapeHtml(layoutUrl)}" alt="HOLE ${hole.number} レイアウト" />
       </div>
-      <div class="print-cell__notes" aria-label="メモ欄"></div>
+      <div class="print-cell__green" aria-label="グリーン拡大">
+        <div class="print-cell__green-crop">
+          <img src="${escapeHtml(greenUrl)}" alt="HOLE ${hole.number} グリーン周り" />
+        </div>
+      </div>
     </div>
   `;
 };
 
-const renderPrintPage = (label, range) => {
-  const cells = holes.filter((h) => range.includes(h.number));
+// 18ホールを4ホールずつチャンクに分割
+const chunkHoles = (size) => {
+  const chunks = [];
+  const sorted = [...holes].sort((a, b) => a.number - b.number);
+  for (let i = 0; i < sorted.length; i += size) {
+    chunks.push(sorted.slice(i, i + size));
+  }
+  return chunks;
+};
+
+const renderPrintPage = (cells, pageIdx, totalPages) => {
+  const first = cells[0]?.number;
+  const last = cells[cells.length - 1]?.number;
+  const range = first === last ? `HOLE ${first}` : `HOLE ${first}-${last}`;
   return `
-    <section class="print-page">
+    <section class="print-page print-page--4">
       <header class="print-page__head">
         <span class="print-page__course">${escapeHtml(COURSE_NAME)}</span>
-        <span class="print-page__label">${label}</span>
-        <span class="print-page__date">日付: ____________</span>
+        <span class="print-page__label">${range}</span>
+        <span class="print-page__date">${pageIdx + 1} / ${totalPages}</span>
       </header>
-      <div class="print-grid">
+      <div class="print-grid print-grid--4">
         ${cells.map(renderPrintCell).join("")}
       </div>
     </section>
@@ -381,8 +398,7 @@ const renderPrintPage = (label, range) => {
 };
 
 const renderPrint = () => {
-  const out = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-  const inn = [10, 11, 12, 13, 14, 15, 16, 17, 18];
+  const chunks = chunkHoles(4);
   app.innerHTML = `
     <header class="site-header site-header--hole no-print">
       <div class="site-header__inner">
@@ -395,8 +411,7 @@ const renderPrint = () => {
       </div>
     </header>
     <main class="page page--print">
-      ${renderPrintPage("OUT", out)}
-      ${renderPrintPage("IN", inn)}
+      ${chunks.map((c, i) => renderPrintPage(c, i, chunks.length)).join("")}
     </main>
   `;
   const btn = document.getElementById("printBtn");
